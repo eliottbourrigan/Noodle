@@ -89,3 +89,12 @@ button img {
 #searchResults li {
    margin-bottom: 20px; /* Add some spacing between each result */
 }
+
+#searchInput:focus {
+   outline: none;
+}
+
+#reloadPage {
+   cursor: pointer;
+ }
+ 

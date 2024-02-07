@@ -13,6 +13,11 @@ searchInput.addEventListener('keypress', function(event) {
     }
 });
 
+document.getElementById('reloadPage').addEventListener('click', function() {
+    location.reload(true); // La valeur true force le rechargement depuis le serveur et ignore le cache
+  });
+  
+
 function performSearch() {
     // Supprime l'élément .titlescreen s'il existe
     const titlescreen = document.querySelector('.titlescreen');
@@ -46,13 +51,20 @@ function performSearch() {
                 const pageContainer = document.createElement('div');
                 pageContainer.style.cursor = 'pointer';
                 pageContainer.style.transition = 'background-color 0.3s'; // Add smooth transition
-                pageContainer.style.padding = '5px'; // Add 5px padding
+                pageContainer.style.padding = '15px'; // Add 5px padding
                 pageContainer.style.maxWidth = '500px'; // Set maximum width
                 pageContainer.style.borderRadius = '10px'; // Round the corners
                 pageContainer.style.margin = 'auto'; // Center horizontally
+
+                // Ajoute un événement de clic pour rediriger vers le lien
+                pageContainer.addEventListener('click', function() {
+                    window.location.href = result.url;
+                });
+
                 pageContainer.addEventListener('mouseover', function() {
                     pageContainer.style.backgroundColor = 'lightgrey';
                 });
+                
                 pageContainer.addEventListener('mouseout', function() {
                     pageContainer.style.backgroundColor = 'initial';
                 });
@@ -99,3 +111,4 @@ function performSearch() {
         .catch(error => console.error('Erreur de recherche :', error));
 }
 
+    
