@@ -6,14 +6,22 @@ from lxml import etree
 from threading import Thread
 from urllib import robotparser, error, parse
 
+
 class Crawler:
-    def __init__(self, base_url, max_urls=50, n_threads=1, politeness_delay=3, max_url_per_page=5):
+    def __init__(
+        self,
+        base_url,
+        max_urls=5,
+        n_threads=3,
+        politeness_delay=3,
+        max_url_per_page=None,
+    ):
         """
         Initializes the WebCrawler.
         """
         self.base_url = base_url
         self.max_urls = max_urls
-        self.visited_urls = {} # {url: time}
+        self.visited_urls = {}  # {url: {title, content, time}}
         self.urls_to_crawl = [base_url]
         self.visited_sitemaps = set()
         self.n_threads = n_threads
@@ -21,14 +29,20 @@ class Crawler:
         self.politeness_delay = politeness_delay
         self.max_url_per_page = max_url_per_page
 
-        print(f"Initialized WebCrawler with base URL {base_url} and {max_urls} max URLs.")
+        print(
+            f"Initialized WebCrawler with base URL {base_url} and {max_urls} max URLs."
+        )
 
     def add_url_to_crawl(self, url):
         """
         Adds a URL to the list of URLs to crawl if it hasn't been visited or added already.
         Do not add XML URLs to avoid parsing sitemaps twice
         """
-        if url not in self.visited_urls and url not in self.urls_to_crawl and not url.endswith(".xml"):
+        if (
+            url not in self.visited_urls
+            and url not in self.urls_to_crawl
+            and not url.endswith(".xml")
+        ):
             self.urls_to_crawl.append(url)
 
     def parse_robots(self, url, thread_prefix=""):
@@ -49,10 +63,10 @@ class Crawler:
         # Checking if a sitemap is available
         sitemaps = []
         robots_content = requests.get(robots_url).text
-        for line in robots_content.split('\n'):
-            if line.startswith('Sitemap:'):
-                sitemaps.append(line.split(': ')[1].strip())
-        
+        for line in robots_content.split("\n"):
+            if line.startswith("Sitemap:"):
+                sitemaps.append(line.split(": ")[1].strip())
+
         # Parsing sitemaps
         for sitemap_url in sitemaps:
             if sitemap_url in self.visited_sitemaps:
@@ -61,12 +75,19 @@ class Crawler:
             self.visited_sitemaps.add(sitemap_url)
             print(f"{thread_prefix}Found sitemap {sitemap_url}. Parsing sitemap...")
             sitemap_content = requests.get(sitemap_url).content
-            xml_parser = etree.XMLParser(recover=True) 
+            xml_parser = etree.XMLParser(recover=True)
             root = etree.fromstring(sitemap_content, parser=xml_parser)
 
             # Extracting URLs from the sitemap
-            urls = [loc.text for loc in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
-            print(f"{thread_prefix}Found {len(urls)} URLs in the sitemap {sitemap_url}.")
+            urls = [
+                loc.text
+                for loc in root.findall(
+                    ".//{http://www.sitemaps.org/schemas/sitemap/0.9}loc"
+                )
+            ]
+            print(
+                f"{thread_prefix}Found {len(urls)} URLs in the sitemap {sitemap_url}."
+            )
 
             for url in urls:
                 self.add_url_to_crawl(url)
@@ -81,7 +102,9 @@ class Crawler:
         while self.urls_to_crawl and len(self.visited_urls) < self.max_urls:
             # Compute number of threads to start
             n_current_threads = min(self.n_threads, len(self.urls_to_crawl))
-            n_current_threads = min(n_current_threads, self.max_urls - len(self.visited_urls))
+            n_current_threads = min(
+                n_current_threads, self.max_urls - len(self.visited_urls)
+            )
             current_urls = self.urls_to_crawl[:n_current_threads]
             self.urls_to_crawl = self.urls_to_crawl[n_current_threads:]
             print(f"Starting {n_current_threads} thread(s)...")
@@ -90,7 +113,9 @@ class Crawler:
             threads = []
             for i in range(n_current_threads):
                 thread_name = f"{i+1}/{n_current_threads}"
-                thread = Thread(target=self.parse_page, args=(current_urls[i], thread_name))
+                thread = Thread(
+                    target=self.parse_page, args=(current_urls[i], thread_name)
+                )
                 thread.start()
                 threads.append(thread)
 
@@ -102,8 +127,7 @@ class Crawler:
             print("Waiting for 3 seconds to respect the politeness policy...")
             time.sleep(self.politeness_delay)
 
-            
-    def parse_page(self, current_url, thread_name = None):
+    def parse_page(self, current_url, thread_name=None):
         """
         Parses the page and extracts the links.
         """
@@ -111,7 +135,7 @@ class Crawler:
         thread_prefix = ""
         if thread_name:
             thread_prefix = "[Thread " + thread_name + "] "
-         
+
         # Chesck if the URL can be crawled based on robots.txt rules
         if not self.parse_robots(current_url, thread_prefix):
             print(f"{thread_prefix}Skipping {current_url} based on robots.txt rules.")
@@ -119,54 +143,89 @@ class Crawler:
 
         # Download the page
         print(f"{thread_prefix}Downloading HTML from {current_url}.")
-        try:
-            response = request.urlopen(current_url)
-            page_content = response.read().decode('utf-8')
 
-        except:
-            page_content = None
-        page_content = page_content[:self.max_url_per_page]
-        
+        page_content = requests.get(current_url).text
+
         if page_content:
             # Extract links from the page
-            soup = BeautifulSoup(page_content, 'html.parser')
-            links_on_page = [a_tag['href'] for a_tag in soup.find_all('a', href=True)]
+            soup = BeautifulSoup(page_content, "html.parser")
+            links_on_page = [a_tag["href"] for a_tag in soup.find_all("a", href=True)]
+            links_on_page = links_on_page[: self.max_url_per_page]
             added_links = 0
 
             # Add new links to the list of URLs to crawl
             for link in links_on_page:
-                absolute_link = link if link.startswith("http") else self.base_url + link
-                if absolute_link not in self.visited_urls and absolute_link not in self.urls_to_crawl:
+                absolute_link = (
+                    link if link.startswith("http") else self.base_url + link
+                )
+                if (
+                    absolute_link not in self.visited_urls
+                    and absolute_link not in self.urls_to_crawl
+                ):
                     self.add_url_to_crawl(absolute_link)
                     added_links += 1
 
             # Mark the current URL as visited
-            self.visited_urls[current_url] = time.time()
-            print(f"{thread_prefix}Successfully downloaded HTML/XML from {current_url}. Added {added_links} new links.")
+            self.visited_urls[current_url] = {
+                "title": soup.title.string[:50],
+                "content": soup.find("p").text[:100],
+                "time": time.time(),
+            }
+            print(
+                f"{thread_prefix}Successfully downloaded HTML/XML from {current_url}. Added {added_links} new links."
+            )
         else:
-            logging.error(f'{thread_prefix}Error while downloading HTML/XML from {current_url}.')
-   
+            logging.error(
+                f"{thread_prefix}Error while downloading HTML/XML from {current_url}."
+            )
+
     def save_visited_urls(self, db_file=None):
         """
         Saves the visited URLs to a file.
         """
         if db_file:
             try:
-                conn = sqlite3.connect("output/visited_urls.db")
+                conn = sqlite3.connect(db_file)
                 cursor = conn.cursor()
 
                 # Create the table if it doesn't exist
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS webpages
-                    (url text, age real)"""
+                    (id INTEGER PRIMARY KEY, url TEXT, title TEXT, content TEXT, time REAL)"""
                 )
 
                 # Insert the URLs into the table
-                for url in self.visited_urls:
-                    cursor.execute("INSERT INTO webpages VALUES (?, ?)", (url, self.visited_urls[url]))
+                for i, url in enumerate(self.visited_urls):
+                    cursor.execute(
+                        "INSERT INTO webpages VALUES (?, ?, ?, ?, ?)",
+                        (
+                            i,
+                            url,
+                            self.visited_urls[url]["title"],
+                            self.visited_urls[url]["content"],
+                            self.visited_urls[url]["time"],
+                        ),
+                    )
                     conn.commit()
                 conn.close()
                 print(f"Successfully saved {len(self.visited_urls)} URLs to {db_file}.")
-            
+
             except Exception as e:
-                logging.error(f"Error while saving the visited URLs to the database: {e}")
+                logging.error(
+                    f"Error while saving the visited URLs to the database: {e}"
+                )
+
+
+def crawler_demo(config):
+    """
+    Runs the crawler demo using the provided configuration.
+    """
+    crawler = Crawler(
+        base_url=config["base-url"],
+        max_urls=config["max-urls"],
+        n_threads=config["n-threads"],
+        politeness_delay=config["politeness-delay"],
+        max_url_per_page=config["max-url-per-page"],
+    )
+    crawler.crawl()
+    crawler.save_visited_urls(config["pages-db"])
