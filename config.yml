@@ -9,6 +9,7 @@ crawler-config:
   pages-db: data/pages.db
   politeness-delay: 3
   n-threads: 10
+  max-url-per-page: 10
 
 indexer-config:
   pages-db: data/pages.db
