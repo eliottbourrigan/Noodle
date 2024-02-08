@@ -6,17 +6,19 @@ global-config:
 crawler-config:
   max-urls: 100
   base-url: https://www.ensai.fr
-  pages-db: data/pages.db
+  pages-file: data/crawled_urls.json
   politeness-delay: 3
   n-threads: 10
-  max-url-per-page: 10
+  max-url-per-page: 1000
 
 indexer-config:
-  pages-db: data/pages.db
-  index-db: data/index.db
-  model: fr_core_news_sm
-  limit: 1000
-  n-threads: 10
+  input-file: data/crawled_urls.json
+  output-dir: data
+  lem-model: fr_core_news_sm
+  limit: False
+  fields: ['title', 'h1']
+  use-pos: False
+  use-stem: False
 
 api-config:
   index-db: data/index.db
