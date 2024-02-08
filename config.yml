@@ -3,6 +3,7 @@ global-config:
   logs: True
   logs-file: logs.log
 
+# Crawler: python main.py -c
 crawler-config:
   max-urls: 100
   base-url: https://www.ensai.fr
@@ -11,14 +12,25 @@ crawler-config:
   n-threads: 10
   max-url-per-page: 1000
 
-indexer-config:
+# Indexer: python main.py -i
+indexer-config: 
   input-file: data/crawled_urls.json
   output-dir: data
   lem-model: fr_core_news_sm
-  limit: False
-  fields: ['title', 'h1']
-  use-pos: False
+  limit: 100
+  fields: ['title']
+  use-pos: True
   use-stem: False
 
+# Ranker: python main.py -r
+ranker-config:
+  lem-model: fr_core_news_sm
+  pages-file: data/crawled_urls.json
+  fields:
+    title:
+      weight: 1
+      index-file: data/title.pos_index.json
+
+# Web Search Engine: python main.py -w
 api-config:
   index-db: data/index.db
