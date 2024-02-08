@@ -5,41 +5,60 @@ import webbrowser
 import uvicorn
 
 # Read the Yaml configuration file
-with open('config.yml', 'r') as f:
+with open("config.yml", "r") as f:
     config = yaml.safe_load(f)
-    print(config)
 
 # Argparser
-parser = argparse.ArgumentParser(description="Description de votre programme")
-parser.add_argument("-c", "--crawler", action="store_true", help="Run Crawler Demo")
-parser.add_argument("-i", "--indexer", action="store_true", help="Run Indexer Demo")
-parser.add_argument("-r", "--ranker", action="store_true", help="Run Ranker Demo")
-parser.add_argument("-w", "--web", action="store_true", help="Run Web Search Engine Demo")
+parser = argparse.ArgumentParser(
+    description="Noodle: Crawler, Indexer, and Search Engine."
+)
+parser.add_argument("-c", "--crawler", action="store_true", help="Run Crawler")
+parser.add_argument("-i", "--indexer", action="store_true", help="Run Indexer")
+parser.add_argument("-r", "--ranker", action="store_true", help="Run Ranker")
+parser.add_argument("-w", "--web", action="store_true", help="Run Web Search Engine")
 args = parser.parse_args()
 
-# Run the different demos based on the arguments
+
 if args.crawler:
-    # Run the crawler demo
-    from backend.crawler import crawler_demo
-    crawler_config = config['crawler-config']
-    crawler_demo(crawler_config)
+    from backend.crawler import Crawler
 
-if args.indexer:
-    # Run the indexer demo
-    from backend.indexer import indexer_demo
-    indexer_config = config['indexer-config']
-    indexer_demo(indexer_config)
+    crawler_config = config["crawler-config"]
+    crawler = Crawler(
+        base_url=crawler_config["base-url"],
+        max_urls=crawler_config["max-urls"],
+        n_threads=crawler_config["n-threads"],
+        politeness_delay=crawler_config["politeness-delay"],
+        max_url_per_page=crawler_config["max-url-per-page"],
+    )
+    crawler.crawl()
+    crawler.save_visited_urls(config["pages-file"])
 
-if args.ranker:
+
+elif args.indexer:
+    from backend.indexer import Indexer
+
+    indexer_config = config["indexer-config"]
+    indexer = Indexer(
+        lem_model=indexer_config["lem-model"],
+        limit=indexer_config["limit"],
+    )
+    indexer.run(
+        input_file=indexer_config["input-file"],
+        output_dir=indexer_config["output-dir"],
+        fields=indexer_config["fields"],
+        use_pos=indexer_config["use-pos"],
+        use_stem=indexer_config["use-stem"],
+    )
+
+
+elif args.ranker:
     # Run the ranker demo
-    from backend.ranker import ranker_demo
-    ranker_config = config['ranker-config']
-    ranker_demo(ranker_config)
+    pass
 
-if args.engine:
+elif args.web:
     # Open the frontend in the default web browser
     cwd = os.getcwd()
-    webbrowser.open(cwd + '/frontend/index.html')
+    webbrowser.open(cwd + "/frontend/index.html")
     uvicorn.run("backend.api:app")
 
 else:
