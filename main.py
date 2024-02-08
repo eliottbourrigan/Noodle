@@ -18,7 +18,6 @@ parser.add_argument("-r", "--ranker", action="store_true", help="Run Ranker")
 parser.add_argument("-w", "--web", action="store_true", help="Run Web Search Engine")
 args = parser.parse_args()
 
-
 if args.crawler:
     from backend.crawler import Crawler
 
@@ -30,7 +29,7 @@ if args.crawler:
         politeness_delay=crawler_config["politeness-delay"],
         max_url_per_page=crawler_config["max-url-per-page"],
     )
-    crawler.crawl()
+    crawler.run()
     crawler.save_visited_urls(config["pages-file"])
 
 
@@ -52,8 +51,20 @@ elif args.indexer:
 
 
 elif args.ranker:
-    # Run the ranker demo
-    pass
+    from backend.ranker import Ranker
+
+    ranker_config = config["ranker-config"]
+    ranker = Ranker(
+        pages_file=ranker_config["pages-file"],
+        fields=ranker_config["fields"],
+        lem_model=ranker_config["lem-model"]
+    )
+    query = ""
+    while query != "exit":
+        query = input("Enter a query (or 'exit' to quit):")
+        results = ranker.run(query)
+        for i, result in enumerate(results):
+            print(f"{i+1}. {result['url']}")
 
 elif args.web:
     # Open the frontend in the default web browser
