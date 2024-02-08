@@ -1,5 +1,5 @@
 import time
-import sqlite3
+import json
 import requests
 from bs4 import BeautifulSoup
 from lxml import etree
@@ -38,12 +38,13 @@ class Crawler:
         Adds a URL to the list of URLs to crawl if it hasn't been visited or added already.
         Do not add XML URLs to avoid parsing sitemaps twice
         """
-        if (
-            url not in self.visited_urls
-            and url not in self.urls_to_crawl
-            and not url.endswith(".xml")
-        ):
-            self.urls_to_crawl.append(url)
+        if not len(self.visited_urls) + len(self.urls_to_crawl) >= self.max_urls:
+            if (
+                url not in self.visited_urls
+                and url not in self.urls_to_crawl
+                and not url.endswith(".xml")
+            ):
+                self.urls_to_crawl.append(url)
 
     def parse_robots(self, url, thread_prefix=""):
         """
@@ -95,7 +96,7 @@ class Crawler:
         # Return True if the URL can be crawled
         return rp.can_fetch("*", url)
 
-    def crawl(self):
+    def run(self):
         """
         Initiates the crawling process.
         """
@@ -144,7 +145,8 @@ class Crawler:
         # Download the page
         print(f"{thread_prefix}Downloading HTML from {current_url}.")
 
-        page_content = requests.get(current_url).text
+        # Download the page with encoding utf-8
+        page_content = requests.get(current_url).content.decode("utf-8")
 
         if page_content:
             # Extract links from the page
@@ -167,65 +169,28 @@ class Crawler:
 
             # Mark the current URL as visited
             self.visited_urls[current_url] = {
-                "title": soup.title.string[:50],
-                "content": soup.find("p").text[:100],
+                "title": soup.title.string,
+                "content": soup.find("p").text,
                 "time": time.time(),
             }
             print(
-                f"{thread_prefix}Successfully downloaded HTML/XML from {current_url}. Added {added_links} new links."
+                f"{thread_prefix}Successfully downloaded HTML from {current_url}. Added {added_links} new links."
             )
         else:
             logging.error(
-                f"{thread_prefix}Error while downloading HTML/XML from {current_url}."
+                f"{thread_prefix}Error while downloading HTML from {current_url}."
             )
 
-    def save_visited_urls(self, db_file=None):
+    def save_visited_urls(self, json_file):
         """
         Saves the visited URLs to a file.
         """
-        if db_file:
-            try:
-                conn = sqlite3.connect(db_file)
-                cursor = conn.cursor()
+        # Convert the visited URLs to a list
+        result_list = [
+            {"url": url, "title": data["title"], "content": str(data["content"])}
+            for url, data in self.visited_urls.items()
+        ]
 
-                # Create the table if it doesn't exist
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS webpages
-                    (id INTEGER PRIMARY KEY, url TEXT, title TEXT, content TEXT, time REAL)"""
-                )
-
-                # Insert the URLs into the table
-                for i, url in enumerate(self.visited_urls):
-                    cursor.execute(
-                        "INSERT INTO webpages VALUES (?, ?, ?, ?, ?)",
-                        (
-                            i,
-                            url,
-                            self.visited_urls[url]["title"],
-                            self.visited_urls[url]["content"],
-                            self.visited_urls[url]["time"],
-                        ),
-                    )
-                    conn.commit()
-                conn.close()
-                print(f"Successfully saved {len(self.visited_urls)} URLs to {db_file}.")
-
-            except Exception as e:
-                logging.error(
-                    f"Error while saving the visited URLs to the database: {e}"
-                )
-
-
-def crawler_demo(config):
-    """
-    Runs the crawler demo using the provided configuration.
-    """
-    crawler = Crawler(
-        base_url=config["base-url"],
-        max_urls=config["max-urls"],
-        n_threads=config["n-threads"],
-        politeness_delay=config["politeness-delay"],
-        max_url_per_page=config["max-url-per-page"],
-    )
-    crawler.crawl()
-    crawler.save_visited_urls(config["pages-db"])
+        # Save the list to a JSON file
+        with open(json_file, "w", encoding="utf-8") as file:
+            json.dump(result_list, file, indent=2, ensure_ascii=False)
