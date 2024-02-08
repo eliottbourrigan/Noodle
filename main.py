@@ -57,7 +57,7 @@ elif args.ranker:
     ranker = Ranker(
         pages_file=ranker_config["pages-file"],
         fields=ranker_config["fields"],
-        lem_model=ranker_config["lem-model"]
+        lem_model=ranker_config["lem-model"],
     )
     query = ""
     while query != "exit":

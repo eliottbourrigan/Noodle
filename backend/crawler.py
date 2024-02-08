@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from lxml import etree
 from threading import Thread
 from urllib import robotparser, error, parse
+from utils.timeout import timeout
 
 
 class Crawler:
@@ -66,7 +67,7 @@ class Crawler:
         robots_content = requests.get(robots_url).text
         for line in robots_content.split("\n"):
             if line.startswith("Sitemap:"):
-                sitemaps.append(line.split(": ")[1].strip())
+                pass  # sitemaps.append(line.split(": ")[1].strip())
 
         # Parsing sitemaps
         for sitemap_url in sitemaps:

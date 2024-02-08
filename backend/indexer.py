@@ -3,7 +3,6 @@ import spacy
 import time
 from threading import Thread
 from nltk.stem import SnowballStemmer
-from backend.lemmatizer import Lemmatizer
 
 
 class Indexer:

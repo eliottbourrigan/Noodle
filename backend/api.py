@@ -4,11 +4,7 @@ from backend.ranker import Ranker
 import yaml
 
 
-max_lengths = {
-    'title': 50,
-    'url': 30,
-    'content': 100
-}
+max_lengths = {"title": 50, "url": 30, "content": 100}
 
 # Read the Yaml configuration file
 with open("config.yml", "r") as f:
@@ -18,7 +14,7 @@ ranker_config = config["ranker-config"]
 ranker = Ranker(
     pages_file=ranker_config["pages-file"],
     fields=ranker_config["fields"],
-    lem_model=ranker_config["lem-model"]
+    lem_model=ranker_config["lem-model"],
 )
 
 app = FastAPI()
@@ -40,5 +36,5 @@ async def search(query: str):
     for page in pages:
         for field in max_lengths.keys():
             if len(page[field]) > max_lengths[field]:
-                page[field] = page[field][:max_lengths[field]] + "..."
+                page[field] = page[field][: max_lengths[field]] + "..."
     return pages
