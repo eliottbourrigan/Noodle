@@ -1,6 +1,6 @@
 # Noodle: Crawler, Indexer, and Search Engine
 
-Noodle is a versatile tool designed for crawling, indexing, and searching web content efficiently. With its modular architecture, Noodle offers a seamless workflow from fetching web pages to indexing their contents and providing fast search capabilities.
+Noodle is a versatile tool designed for crawling, indexing, and searching web content. With its modular architecture, Noodle offers a seamless workflow from fetching web pages to indexing their contents and providing a simple web search engine interface.
 
 ## Features
 
