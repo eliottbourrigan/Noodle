@@ -25,12 +25,12 @@ function performSearch() {
         titlescreen.remove();
     }
 
-    // Simulation d'une recherche avec une chaîne exemple (remplacez cela par votre logique de recherche réelle)
-    const searchInput = "example string";
+    // Récupère la valeur de     l'entrée de recherche
+    const searchInput = document.getElementById('searchInput').value;
     console.log("searchInput: ", searchInput);
 
     // Remplacez l'URL par l'URL réelle de votre API de recherche
-    const apiUrl = `http://127.0.0.1:8000/search?q=${encodeURIComponent(searchInput)}`;
+    const apiUrl = `http://127.0.0.1:8000/search?query=${encodeURIComponent(searchInput)}`;
 
     // Récupère la référence du conteneur des résultats de recherche
     const searchResultsDiv = document.getElementById('searchResults');
