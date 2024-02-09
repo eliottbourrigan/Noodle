@@ -20,9 +20,9 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Install noodle and its dependencies
+      - name: Install dependencies
         run: |
-          pip install -e .
+          pip install -r requirements.txt
 
       - name: Test with pytest and generate coverage report
         run: |
