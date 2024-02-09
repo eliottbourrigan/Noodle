@@ -13,7 +13,7 @@ class Indexer:
         :param str lem_model: the SpaCy model to use for lemmatization.
         :param str stem_model: the Snowball stemmer to use for stemming.
         :param int limit: the maximum number of webpages to index.
-    
+
         """
         self.limit = limit
 
@@ -40,7 +40,7 @@ class Indexer:
         :param list fields: a list of fields to index.
         :param bool use_pos: whether to use a positional index.
         :param bool use_stem: whether to stem the lemmatized content.
-    
+
         """
         print(f"Opening {input_file}...")
         # Parse JSON file
@@ -113,7 +113,7 @@ class Indexer:
         :param list docs: the documents to index.
         :param bool use_pos: whether to use a positional index.
         :return: the index.
-        
+
         """
         index = {}
         for i, doc in enumerate(docs):

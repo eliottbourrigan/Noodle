@@ -80,7 +80,7 @@ class Ranker:
 
         :param list lemma_query: the lemmatized and stemmed query.
         :return: the ranked webpages.
-        
+
         """
         scores = {}  # {"doc_id": score, ...}
 

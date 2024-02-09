@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 from lxml import etree
 from threading import Thread
 from urllib import robotparser, error, parse
-from utils.timeout import timeout
 
 
 class Crawler:
@@ -139,7 +138,7 @@ class Crawler:
 
             # Wait for the threads to finish
             for thread in threads:
-                thread.join()
+                thread.join(10)
 
             # Respect the politeness policy
             print("Waiting for 3 seconds to respect the politeness policy...")
@@ -207,7 +206,7 @@ class Crawler:
         Saves the visited URLs to a file.
 
         :param str json_file: the path to the JSON file to save the visited URLs to.
-        
+
         """
         # Convert the visited URLs to a list
         result_list = [
