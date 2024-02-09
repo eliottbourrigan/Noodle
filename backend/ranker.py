@@ -11,6 +11,14 @@ class Ranker:
     ):
         """
         This function initializes the Ranker class.
+
+        :param str pages_file: the path to the file containing the webpages. It must be a JSON file
+            containing a list of dictionaries that must contain the "title", "url" and "content" key.
+        :param dict fields: a dictionary containing the fields to be used for ranking the webpages.
+            The keys are the fields and the values are dictionaries containing the "weight" and "index-file".
+        :param str lem_model: the SpaCy model to use for lemmatization.
+        :param str stem_model: the Snowball stemmer to use for stemming.
+
         """
         self.pages_file = pages_file
         self.fields = fields  # {"field": {"weight": weight, "index-file": index-file}}
@@ -31,6 +39,11 @@ class Ranker:
     def run(self, query, n_results=10):
         """
         This function ranks the webpages based on the query.
+
+        :param str query: the query to rank the webpages.
+        :param int n_results: the number of results to return.
+        :return: the ranked webpages.
+
         """
         # Preprocess the query
         lemma_query = self.preprocess_query([query])
@@ -42,6 +55,10 @@ class Ranker:
     def preprocess_query(self, query):
         """
         This function lemmatizes and stems the query
+
+        :param str query: the query to preprocess.
+        :return: the lemmatized and stemmed query.
+
         """
         docs = list(self.nlp.pipe(query, disable=["parser", "ner"]))
         lemma_docs = []
@@ -60,6 +77,10 @@ class Ranker:
     def rank_pages(self, lemma_query):
         """
         This function ranks the webpages based on the query.
+
+        :param list lemma_query: the lemmatized and stemmed query.
+        :return: the ranked webpages.
+        
         """
         scores = {}  # {"doc_id": score, ...}
 

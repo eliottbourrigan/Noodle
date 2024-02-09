@@ -19,6 +19,13 @@ class Crawler:
     ):
         """
         Initializes the WebCrawler.
+
+        :param str base_url: the base URL to start crawling from.
+        :param int max_urls: the maximum number of URLs to crawl.
+        :param int n_threads: the number of threads to use for crawling.
+        :param int politeness_delay: the politeness delay in seconds.
+        :param int max_url_per_page: the maximum number of URLs to extract from a page.
+
         """
         self.base_url = base_url
         self.max_urls = max_urls
@@ -38,6 +45,9 @@ class Crawler:
         """
         Adds a URL to the list of URLs to crawl if it hasn't been visited or added already.
         Do not add XML URLs to avoid parsing sitemaps twice
+
+        :param str url: the URL to add to the list of URLs to crawl.
+
         """
         if not len(self.visited_urls) + len(self.urls_to_crawl) >= self.max_urls:
             if (
@@ -50,6 +60,11 @@ class Crawler:
     def parse_robots(self, url, thread_prefix=""):
         """
         Checks if the URL can be crawled and parses the sitemaps if available.
+
+        :param str url: the URL to check.
+        :param str thread_prefix: the prefix to add to the log messages.
+        :return: True if the URL can be crawled.
+
         """
         # Checking if the URL can be crawled
         print(f"{thread_prefix}Checking if {url} can be crawled.")
@@ -100,6 +115,7 @@ class Crawler:
     def run(self):
         """
         Initiates the crawling process.
+
         """
         while self.urls_to_crawl and len(self.visited_urls) < self.max_urls:
             # Compute number of threads to start
@@ -132,6 +148,10 @@ class Crawler:
     def parse_page(self, current_url, thread_name=None):
         """
         Parses the page and extracts the links.
+
+        :param str current_url: the URL to parse.
+        :param str thread_name: the name of the thread.
+
         """
         # Add a prefix to the log messages if the crawler is multi-threaded
         thread_prefix = ""
@@ -185,6 +205,9 @@ class Crawler:
     def save_visited_urls(self, json_file):
         """
         Saves the visited URLs to a file.
+
+        :param str json_file: the path to the JSON file to save the visited URLs to.
+        
         """
         # Convert the visited URLs to a list
         result_list = [

@@ -9,6 +9,11 @@ class Indexer:
     def __init__(self, lem_model="fr_core_news_sm", stem_model="french", limit=None):
         """
         This function initializes the Indexer class.
+
+        :param str lem_model: the SpaCy model to use for lemmatization.
+        :param str stem_model: the Snowball stemmer to use for stemming.
+        :param int limit: the maximum number of webpages to index.
+    
         """
         self.limit = limit
 
@@ -28,6 +33,14 @@ class Indexer:
     def run(self, input_file, output_dir, fields, use_pos=False, use_stem=False):
         """
         This function indexes the crawled webpages and saves the indexs in the output directory.
+
+        :param str input_file: the path to the file containing the webpages. It must be a JSON file
+            containing a list of dictionaries that must contain the fields to be indexed.
+        :param str output_dir: the directory where to save the indexs.
+        :param list fields: a list of fields to index.
+        :param bool use_pos: whether to use a positional index.
+        :param bool use_stem: whether to stem the lemmatized content.
+    
         """
         print(f"Opening {input_file}...")
         # Parse JSON file
@@ -78,6 +91,10 @@ class Indexer:
     def lemmatize(self, docs):
         """
         This function lemmatizes a list of documents.
+
+        :param list docs: the documents to lemmatize.
+        :return: the lemmatized documents.
+
         """
         docs = list(self.nlp.pipe(docs, disable=["parser", "ner"]))
         lemma_docs = []
@@ -92,6 +109,11 @@ class Indexer:
     def create_index(docs, use_pos):
         """
         This function creates an index from a list of documents.
+
+        :param list docs: the documents to index.
+        :param bool use_pos: whether to use a positional index.
+        :return: the index.
+        
         """
         index = {}
         for i, doc in enumerate(docs):
