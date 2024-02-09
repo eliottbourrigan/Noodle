@@ -12,12 +12,9 @@ jobs:
     - name: Install requirements
       run: pip install -r requirements.txt
 
-    - name: set PYTHONPATH
-      run: export PYTHONPATH=/home/runner/work/Noodle/Noodle
-
     - name: Run tests and collect coverage
-      run: pytest --cov tests/
-      
+      run: python -m pytest --cov tests/
+
     - name: Upload coverage reports to Codecov
       run: |
         # Replace `linux` below with the appropriate OS
