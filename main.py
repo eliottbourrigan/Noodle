@@ -30,7 +30,7 @@ if args.crawler:
         max_url_per_page=crawler_config["max-url-per-page"],
     )
     crawler.run()
-    crawler.save_visited_urls(config["pages-file"])
+    crawler.save_visited_urls(crawler_config["pages-file"])
 
 
 elif args.indexer:
