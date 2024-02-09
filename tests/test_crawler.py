@@ -1,5 +1,5 @@
 import pytest
-from backend.crawler import Crawler  # Assuming your crawler class is defined in crawler.py
+from backend.crawler import Crawler
 
 
 @pytest.fixture
@@ -23,7 +23,9 @@ def test_add_url_to_crawl(crawler_instance):
 def test_parse_robots(crawler_instance):
     # Test the parse_robots method
     url = "http://example.com"
-    assert crawler_instance.parse_robots(url) is True  # Assuming the default behavior is to allow crawling
+    assert (
+        crawler_instance.parse_robots(url) is True
+    )  # Assuming the default behavior is to allow crawling
 
 
 def test_parse_page(crawler_instance):
@@ -36,7 +38,9 @@ def test_parse_page(crawler_instance):
 def test_save_visited_urls(crawler_instance, tmp_path):
     # Test the save_visited_urls method
     json_file = tmp_path / "visited_urls.json"
-    crawler_instance.visited_urls = {"http://example.com": {"title": "Example", "content": "Hello"}}
+    crawler_instance.visited_urls = {
+        "http://example.com": {"title": "Example", "content": "Hello"}
+    }
     crawler_instance.save_visited_urls(json_file)
     assert json_file.is_file()  # Check if the JSON file is created
 
