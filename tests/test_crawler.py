@@ -1,5 +1,5 @@
 import pytest
-from crawler import Crawler  # Assuming your crawler class is defined in crawler.py
+from backend.crawler import Crawler  # Assuming your crawler class is defined in crawler.py
 
 
 @pytest.fixture
