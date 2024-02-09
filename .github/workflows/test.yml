@@ -1,0 +1,33 @@
+name: Test
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  test:
+    name: Test Noodle
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, '#skip-test') }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+
+      - name: Install noodle and its dependencies
+        run: |
+          pip install -e .
+
+      - name: Test with pytest and generate coverage report
+        run: |
+          python -m pytest tests
+          pytest --cov=./ --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
