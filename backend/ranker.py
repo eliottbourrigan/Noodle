@@ -111,3 +111,45 @@ class Ranker:
 
         # Return the ranked webpages
         return [pages[int(doc_id)] for doc_id, _ in sorted_scores]
+
+
+    @staticmethod
+    def retrieve_top_pages(n_pages, query, index):
+        """
+        This function retrieves the top pages based on the BM25 score.
+
+        :param int n_pages: the number of pages to retrieve.
+        :param list query: the query to rank the webpages.
+        :param dict index: the inverted index.
+        :return: the top pages.
+
+        """
+
+        def bm25_score(query, token_index, page_id, avg_doc_length, k1=1.5, b=0.75):
+            """
+            This function computes the BM25 score.
+
+            :param list query: the query to rank the webpages.
+            :param dict token_index: the inverted index.
+            :param str page_id: the page id.
+            :param float avg_doc_length: the average document length.
+            :param float k1: the k1 parameter.
+            :param float b: the b parameter.
+            :return: the BM25 score.
+
+            """
+            score = 0
+            for token in query:
+                if token in token_index and page_id in token_index[token]:
+                    f = len(token_index[token][page_id])
+                    idf = math.log((len(token_index) - f + 0.5) / (f + 0.5) + 1)
+                    tf = f * (k1 + 1) / (f + k1 * (1 - b + b * len(token_index[token][page_id]) / avg_doc_length))
+                    score += idf * tf
+            return score
+
+        avg_doc_length = sum(len(doc) for doc in index.values()) / len(index)
+        scores = {}
+        for page_id in index.values():
+            scores[page_id] = bm25_score(query, index, page_id, avg_doc_length)
+        top_pages = sorted(scores.keys(), key=lambda x: scores[x], reverse=True)[:n_pages]
+        return top_pages
